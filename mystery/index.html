@@ -1,1 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kind Mystery Generator</title>
+  <style>
+    :root {
+      --bg: #fffaf2;
+      --card: #ffffff;
+      --ink: #2e2a26;
+      --soft: #6f665f;
+      --accent: #7b5cff;
+      --accent-2: #ffb84d;
+      --line: #eadfce;
+      --good: #1d7a46;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #fffaf2 0%, #fff4e8 100%);
+      color: var(--ink);
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .title-card,
+    .card {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+    }
+
+    .title-card {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin: 0 0 8px 0;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--soft);
+      line-height: 1.4;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    button,
+    select {
+      border: 0;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    button {
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .secondary {
+      background: #f4efe7;
+      color: var(--ink);
+      border: 2px solid var(--line);
+    }
+
+    .theme-select {
+      background: #fff;
+      color: var(--ink);
+      border: 2px solid var(--line);
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--soft);
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.2rem;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    ul {
+      margin: 8px 0 0 20px;
+      padding: 0;
+      line-height: 1.5;
+    }
+
+    .story-title {
+      font-size: 1.35rem;
+      margin: 0;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      background: #fff8e8;
+      color: #5f4a19;
+      border: 1px solid #f0ddb0;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 0.92rem;
+    }
+
+    .roll-box {
+      display: grid;
+      gap: 8px;
+    }
+
+    .roll-step {
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: #fffdf9;
+    }
+
+    .tip {
+      color: var(--soft);
+      font-size: 0.95rem;
+    }
+
+    .rules {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rules strong {
+      color: var(--good);
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--soft);
+      font-size: 0.92rem;
+      margin: 14px 0 26px;
+    }
+
+    @media (max-width: 640px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.55rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title-card">
+      <h1>🕵️ Kind Mystery Generator</h1>
+      <p class="subtitle">Press one button and get a playful mystery for kids. Switch themes for cosy village mysteries or fairy-school adventures.</p>
+    </div>
+
+    <div class="controls">
+      <select class="theme-select" id="themeSelect">
+        <option value="cozy">🧁 Cozy Mystery</option>
+        <option value="winx">🧚 Fairy Adventure</option>
+      </select>
+      <button class="primary" id="generateBtn">✨ Generate a Mystery</button>
+      <button class="secondary" id="rerollEndingBtn">💖 Reroll Twist + Ending</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="section-label">Story</div>
+        <h2 class="story-title" id="storyTitle">Tap the button to begin!</h2>
+        <p id="storyIntro" style="margin-top: 10px;">Your mystery will appear here.</p>
+        <div class="pill-row" id="storyTags"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Clue Trail</div>
+        <div class="roll-box" id="clueTrail"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Twist</div>
+        <p id="twistText">A gentle surprise will appear here.</p>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Happy Ending</div>
+        <p id="endingText">A kind ending will appear here.</p>
+      </div>
+
+      <div class="card">
+        <div class="section-label">How to Play</div>
+        <div class="rules" id="rulesBox">
+          <p>🎲 Roll <strong>1d6</strong>. A <strong>4, 5, or 6</strong> succeeds.</p>
+          <p>⭐ Each player starts with <strong>3 hero tokens</strong>.</p>
+          <p>💡 If a roll fails, spend <strong>1 token</strong> to still succeed.</p>
+          <p>🔁 No token? Try another way with a different skill, or let a friendly NPC help.</p>
+          <p>🧒 Suggested skills: <strong>Strong</strong>, <strong>Fast</strong>, <strong>Clever</strong>, <strong>Kind</strong>, <strong>Magic</strong>.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label" id="characterSectionLabel">Quick Character Ideas</div>
+        <div id="characterBox">
+          <ul id="characterList">
+            <li><strong>Detective</strong> — very Clever</li>
+            <li><strong>Explorer</strong> — very Fast</li>
+            <li><strong>Protector</strong> — very Strong</li>
+            <li><strong>Helper</strong> — very Kind</li>
+            <li><strong>Inventor</strong> — very Magic</li>
+          </ul>
+          <p class="tip" id="characterTip" style="margin-top: 10px;">Add a companion too: pony, cat, parrot, robot, dragon, bunny, or anything funny.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="footer-note">Made for quick pick-up-and-play stories on a phone.</p>
+  </div>
+
+  <script>
+    const THEMES = {
+      cozy: {
+        label: "Cozy Mystery",
+        skills: ["Strong", "Fast", "Clever", "Kind", "Magic"],
+        rulesSkillText: "Strong, Fast, Clever, Kind, Magic",
+        characterLabel: "Quick Character Ideas",
+        characterItems: [
+          "<strong>Detective</strong> — very Clever",
+          "<strong>Explorer</strong> — very Fast",
+          "<strong>Protector</strong> — very Strong",
+          "<strong>Helper</strong> — very Kind",
+          "<strong>Inventor</strong> — very Magic"
+        ],
+        characterTip: "Add a companion too: pony, cat, parrot, robot, dragon, bunny, or anything funny.",
+        extraTags: [
+          "Silly NPCs",
+          "Friendly clues",
+          "Redeemable twist",
+          "Great for ages 5+",
+          "One-shot mystery",
+          "Companion-friendly",
+          "No prep needed"
+        ],
+        settings: [
+          {
+            name: "Sunny Side Bakery",
+            item: "treats",
+            npcA: "Pippa the octopus baker",
+            npcB: "Bramble the hedgehog firefighter",
+            suspect: "the new helper",
+            signs: "burnt buns, warm ovens, and a trail of crumbs",
+            clueSteps: [
+              { skill: "Fast", text: "Hurry to the bakery before the clues are cleaned up." },
+              { skill: "Kind", text: "Talk to Bramble the hedgehog firefighter and ask what was found at the scene." },
+              { skill: "Clever", text: "Speak to Pippa the octopus baker and find out who worked late yesterday." },
+              { skill: "Strong", text: "Open the tricky oven doors and look inside for one last clue." }
+            ],
+            villain: "mischievous biscuit animals",
+            twistOptions: [
+              "someone used a bag of special flour without knowing what it did",
+              "a lonely invisible child was trying to make magical animal treats for fun",
+              "the magic baking mix brought the treats to life by accident"
+            ],
+            endingOptions: [
+              "The bakery is cleaned up, the blamed helper is forgiven, and everyone learns to label the magical flour clearly.",
+              "The biscuit creatures are calmed down, and the town makes a safe day for magical baking experiments.",
+              "The real cause is discovered, nobody is unfairly blamed, and the players help turn the disaster into a cheerful baking party."
+            ],
+            openingOptions: [
+              "At breakfast, your companion smells smoke drifting through the air.",
+              "Just as the day begins, someone rushes in shouting that something has gone wrong at the bakery.",
+              "You wake up to a worrying smell and see a grey plume rising into the sky."
+            ]
+          },
+          {
+            name: "Moonbeam Library",
+            item: "books",
+            npcA: "Tilly the goat librarian",
+            npcB: "Dot the parrot postmaster",
+            suspect: "a strange visitor",
+            signs: "fallen books, chewed bookmarks, and a dusty trail between shelves",
+            clueSteps: [
+              { skill: "Fast", text: "Race to the library before anyone tidies the shelves." },
+              { skill: "Kind", text: "Talk to Tilly the goat librarian and ask which books vanished first." },
+              { skill: "Clever", text: "Question Dot the parrot postmaster, who may have delivered something unusual that morning." },
+              { skill: "Fast", text: "Follow the dusty trail between the shelves to a hidden corner." }
+            ],
+            villain: "giggling paper birds folded from missing pages",
+            twistOptions: [
+              "a child used a library spell book and accidentally brought paper birds to life",
+              "someone made magical decorations for a reading party, but the decorations flew away and caused chaos",
+              "the so-called troublemaker was only trying to make the library feel more exciting for lonely readers"
+            ],
+            endingOptions: [
+              "The paper birds are gently gathered, the missing books are repaired, and the child who caused it helps run story time.",
+              "Everyone learns what really happened, and the library starts a safe craft corner for magical ideas.",
+              "The players solve the mystery, nobody is wrongly blamed, and the paper birds become part of a special reading parade."
+            ],
+            openingOptions: [
+              "A neighbour hurries over to say that the library is in a terrible muddle.",
+              "You wake up to find everyone talking about missing books at the library.",
+              "Something odd is happening in town, and your companion is the first to notice loose pages blowing by."
+            ]
+          },
+          {
+            name: "Treetop School",
+            item: "homework",
+            npcA: "Pickles the fox teacher",
+            npcB: "Juniper the rabbit gardener",
+            suspect: "something magical",
+            signs: "scribbled papers, muddy footprints, and giggling from the roof",
+            clueSteps: [
+              { skill: "Fast", text: "Get to the school quickly before the playground fills up." },
+              { skill: "Kind", text: "Ask Pickles the fox teacher who was last in the classroom." },
+              { skill: "Clever", text: "Inspect the scattered homework and spot what all the pages have in common." },
+              { skill: "Strong", text: "Move a heavy crate or ladder to reach the final hiding spot." }
+            ],
+            villain: "runaway homework sprites",
+            twistOptions: [
+              "a practice spell for making homework more fun worked far too well",
+              "someone tried to help with chores and accidentally woke up the school's old magic",
+              "the little sprites were not evil at all, just excited to play"
+            ],
+            endingOptions: [
+              "The homework is returned, the sprites help tidy the classroom, and the school makes a safer magic club.",
+              "The players solve the muddle kindly, and the person who caused it gets help instead of blame.",
+              "Everyone works together to fix the mess, and the sprites become helpers for special school events."
+            ],
+            openingOptions: [
+              "The school bell rings in a very strange way, and everyone starts whispering.",
+              "Your companion spots papers fluttering down from the treetops.",
+              "A teacher asks for help because the morning at school has become very peculiar."
+            ]
+          },
+          {
+            name: "Busy Bug Garden",
+            item: "plants",
+            npcA: "Muffin the rabbit gardener",
+            npcB: "Noodle the frog mechanic",
+            suspect: "a new machine",
+            signs: "uprooted flowers, muddy tracks, and one whirring noise behind the shed",
+            clueSteps: [
+              { skill: "Fast", text: "Hurry to the garden before the strange tracks are washed away." },
+              { skill: "Kind", text: "Talk to Muffin the rabbit gardener and find out which plants were moved first." },
+              { skill: "Clever", text: "Inspect the muddy tracks and work out where they lead." },
+              { skill: "Magic", text: "Test the noisy machine or magical tool to see what it does." }
+            ],
+            villain: "a confused seed-planting machine",
+            twistOptions: [
+              "the machine copied the wrong instructions over and over",
+              "someone was trying to help the garden grow faster and pressed the wrong button",
+              "the machine thought every empty space needed a plant right away"
+            ],
+            endingOptions: [
+              "The garden is fixed, the machine is reprogrammed, and everyone laughs about the over-helpful disaster.",
+              "The players discover the truth, no one is unfairly blamed, and the garden gets a safe inventing patch.",
+              "The mixed-up machine is taught the right job and becomes a useful helper."
+            ],
+            openingOptions: [
+              "At breakfast, your companion sniffs the air and notices fresh soil everywhere.",
+              "You wake up to hear that the town garden has become a complete muddle overnight.",
+              "A gardener arrives in a flap and begs for help with a very strange plant problem."
+            ]
+          }
+        ]
+      },
+      winx: {
+        label: "Fairy Adventure",
+        skills: ["Power", "Speed", "Mind", "Heart", "Magic"],
+        rulesSkillText: "Power, Speed, Mind, Heart, Magic",
+        characterLabel: "Fairy Character Ideas",
+        characterItems: [
+          "<strong>Fire Fairy</strong> — very Power",
+          "<strong>Light Fairy</strong> — very Speed",
+          "<strong>Nature Fairy</strong> — very Heart",
+          "<strong>Tech Fairy</strong> — very Mind",
+          "<strong>Moon Fairy</strong> — very Magic"
+        ],
+        characterTip: "Instead of a companion, each player chooses a fairy power such as fire, nature, music, light, moon, water, or technology.",
+        extraTags: [
+          "Fairy powers",
+          "Magic school",
+          "Redeemable twist",
+          "Transformation vibes",
+          "Friendship wins",
+          "Bright adventure",
+          "No prep needed"
+        ],
+        settings: [
+          {
+            name: "Alfea College",
+            item: "magic spells",
+            npcA: "Bloom the fire fairy",
+            npcB: "Flora the nature fairy",
+            suspect: "a student who lost control of their magic",
+            signs: "sparkling vines growing indoors and glowing spell marks drifting through the air",
+            clueSteps: [
+              { skill: "Speed", text: "Fly quickly across Alfea to find where the magic disturbance started." },
+              { skill: "Heart", text: "Talk to Bloom and Flora to understand what spells were being practised." },
+              { skill: "Mind", text: "Examine the magical traces and work out what kind of spell caused them." },
+              { skill: "Magic", text: "Use your own fairy power to gently test and steady the strange energy." }
+            ],
+            villain: "a burst of runaway fairy magic taking shape",
+            twistOptions: [
+              "a fairy was trying to make their magic stronger but did not realise it would grow out of control",
+              "a new student got overwhelmed and their feelings accidentally created wild magic",
+              "the magic was trying to help but did not understand how to behave safely"
+            ],
+            endingOptions: [
+              "The magic is calmed, the fairy is reassured, and everyone learns how to control their powers more safely.",
+              "The players help the fairy understand their feelings, and the magic becomes something beautiful instead of chaotic.",
+              "The situation is resolved with teamwork, and the school creates a new safe training space for powerful magic."
+            ],
+            openingOptions: [
+              "At the start of the day, magical energy sparkles wildly across Alfea.",
+              "A teacher calls for help because spells are behaving strangely around the school.",
+              "Your fairy senses tingle as magic begins to swirl out of control nearby."
+            ]
+          },
+          {
+            name: "Cloud Tower Courtyard",
+            item: "practice potions",
+            npcA: "Musa the music fairy",
+            npcB: "Tecna the tech fairy",
+            suspect: "a witch prank gone too far",
+            signs: "bubbling potion puddles, floating glass droplets, and music notes flickering in the air",
+            clueSteps: [
+              { skill: "Speed", text: "Reach the courtyard before the unstable potions spread any further." },
+              { skill: "Heart", text: "Talk to Musa and calm the nervous students who saw the first explosion." },
+              { skill: "Mind", text: "Study the potion splashes and work out which ingredients reacted badly." },
+              { skill: "Magic", text: "Use fairy magic to seal or settle the wild potion energy." }
+            ],
+            villain: "a flock of bouncing potion bubbles with minds of their own",
+            twistOptions: [
+              "a young witch was trying to impress everyone and mixed two spells that should never have touched",
+              "a practise potion copied the strongest emotion in the room and turned playful instead of dangerous",
+              "someone only wanted to make a dazzling magical display but did not think through the results"
+            ],
+            endingOptions: [
+              "The potion bubbles are safely gathered, the young witch apologises, and the class learns how to experiment more carefully.",
+              "The truth comes out kindly, nobody is shamed, and the students create a supervised magic showcase instead.",
+              "The players fix the problem and turn the potion mistake into a lesson about teamwork and self-control."
+            ],
+            openingOptions: [
+              "A bright flash lights up the sky, followed by confused shouting from the courtyard.",
+              "Your fairy power hums strangely as you near a patch of bubbling magic.",
+              "Students are whispering that someone's potion has escaped and started bouncing everywhere."
+            ]
+          },
+          {
+            name: "Magix City Plaza",
+            item: "crystal lights",
+            npcA: "Stella the sun and moon fairy",
+            npcB: "Aisha the waves fairy",
+            suspect: "a broken festival spell",
+            signs: "flickering crystal lanterns, glowing footprints, and a ribbon of light zigzagging through the square",
+            clueSteps: [
+              { skill: "Speed", text: "Dash across the plaza and follow the ribbon of light before it fades." },
+              { skill: "Heart", text: "Speak to Stella and Aisha about what the festival lights were meant to do." },
+              { skill: "Mind", text: "Examine the lantern crystals and spot what has changed in their magic pattern." },
+              { skill: "Magic", text: "Use a careful spell to reveal who or what is controlling the lights." }
+            ],
+            villain: "a dancing cluster of living festival lights",
+            twistOptions: [
+              "a lonely apprentice enchanted the lights so the celebration would never end",
+              "the crystal lanterns copied a wish for more joy and became too lively to switch off",
+              "someone was trying to cheer up the city after a gloomy week and accidentally woke the old festival magic"
+            ],
+            endingOptions: [
+              "The lights are guided back into their lanterns, the apprentice is forgiven, and the city plans a safer festival together.",
+              "The players uncover the real cause, the celebration is saved, and the runaway lights become part of a magical parade.",
+              "Everyone learns what happened, and the person behind it is invited to help create next year's festival properly."
+            ],
+            openingOptions: [
+              "Just before evening, the festival lights begin to dance in ways they absolutely should not.",
+              "A glowing streak zips over the rooftops, and your fairy power tells you something is wrong in the plaza.",
+              "The city square is full of sparkles, but nobody can get the crystal lanterns to behave."
+            ]
+          },
+          {
+            name: "Red Fountain Training Hall",
+            item: "practice drones",
+            npcA: "Sky the specialist",
+            npcB: "Timmy the gadget expert",
+            suspect: "a training test that glitched",
+            signs: "whirring drones, flashing targets, and one locked practice room glowing blue",
+            clueSteps: [
+              { skill: "Speed", text: "Reach the training hall quickly before the drones escape into the rest of the school." },
+              { skill: "Heart", text: "Talk to Sky and Timmy to find out what the training exercise was supposed to do." },
+              { skill: "Mind", text: "Inspect the control panel and work out why the drones changed their orders." },
+              { skill: "Power", text: "Use strength or fairy force to block the last runaway drone long enough to reset it." }
+            ],
+            villain: "over-helpful practice drones trying to win the test by themselves",
+            twistOptions: [
+              "the drones misunderstood a command to protect everyone at all costs",
+              "someone boosted the training difficulty to seem impressive and triggered the wrong routine",
+              "the machines were only trying to finish the mission perfectly, even when nobody asked them to"
+            ],
+            endingOptions: [
+              "The drones are reset, the student responsible tells the truth, and the hall gets a better safety system.",
+              "The problem is solved without blame, and the players help redesign the training challenge fairly.",
+              "Everyone works together to calm the chaos, and the drones become trusted helpers again."
+            ],
+            openingOptions: [
+              "An alarm sounds from Red Fountain, and a swarm of practice drones shoots into the hallways.",
+              "Your communicator flashes with an urgent message about a training exercise gone wrong.",
+              "The training hall doors slam shut, and blue light spills out beneath them."
+            ]
+          }
+        ]
+      }
+    };
+
+    const state = {
+      current: null,
+      themeKey: "cozy"
+    };
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function pickTwoDifferent(arr) {
+      const first = pick(arr);
+      let second = pick(arr);
+      while (second === first && arr.length > 1) {
+        second = pick(arr);
+      }
+      return [first, second];
+    }
+
+    function currentTheme() {
+      return THEMES[state.themeKey];
+    }
+
+    function buildMystery(existing = null) {
+      const theme = currentTheme();
+      const setting = existing?.setting || pick(theme.settings);
+      const opening = existing?.opening || pick(setting.openingOptions);
+      const twist = pick(setting.twistOptions);
+      const ending = pick(setting.endingOptions);
+
+      return {
+        title: `The Mystery of ${setting.name}`,
+        setting,
+        opening,
+        twist,
+        ending,
+        themeKey: state.themeKey
+      };
+    }
+
+    function updateThemeUI() {
+      const theme = currentTheme();
+      document.getElementById("characterSectionLabel").textContent = theme.characterLabel;
+
+      const rulesBox = document.getElementById("rulesBox");
+      rulesBox.innerHTML = `
+        <p>🎲 Roll <strong>1d6</strong>. A <strong>4, 5, or 6</strong> succeeds.</p>
+        <p>⭐ Each player starts with <strong>3 hero tokens</strong>.</p>
+        <p>💡 If a roll fails, spend <strong>1 token</strong> to still succeed.</p>
+        <p>🔁 No token? Try another way with a different skill, or let a friendly NPC help.</p>
+        <p>🧒 Suggested skills: <strong>${theme.rulesSkillText}</strong>.</p>
+      `;
+
+      const characterList = document.getElementById("characterList");
+      characterList.innerHTML = "";
+      theme.characterItems.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = item;
+        characterList.appendChild(li);
+      });
+
+      document.getElementById("characterTip").textContent = theme.characterTip;
+    }
+
+    function renderMystery(mystery) {
+      document.getElementById("storyTitle").textContent = mystery.title;
+
+      const introLead = mystery.themeKey === "winx"
+        ? `${mystery.opening} Today, at ${mystery.setting.name}, the ${mystery.setting.item} have gone wrong or spun into chaos.`
+        : `${mystery.opening} Today, in the ${mystery.setting.name}, the ${mystery.setting.item} have gone missing or been thrown into a muddle.`;
+
+      document.getElementById("storyIntro").textContent =
+        `${introLead} First, the players meet ${mystery.setting.npcA}, who is very worried. ` +
+        `Then they speak with ${mystery.setting.npcB}, who has noticed ${mystery.setting.signs}. ` +
+        `At first, people suspect ${mystery.setting.suspect}, but the clues lead somewhere more surprising.`;
+
+      const tags = document.getElementById("storyTags");
+      tags.innerHTML = "";
+      const [tag1, tag2] = pickTwoDifferent(currentTheme().extraTags);
+      [mystery.setting.name, mystery.setting.villain, tag1, tag2].forEach(tag => {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = tag;
+        tags.appendChild(pill);
+      });
+
+      const clueTrail = document.getElementById("clueTrail");
+      clueTrail.innerHTML = "";
+      mystery.setting.clueSteps.forEach((clue, i) => {
+        const div = document.createElement("div");
+        div.className = "roll-step";
+        div.innerHTML = `<strong>Clue ${i + 1} — Roll ${clue.skill}</strong><br>${clue.text}`;
+        clueTrail.appendChild(div);
+      });
+
+      document.getElementById("twistText").textContent =
+        `Twist: It turns out that ${mystery.twist}. The trouble was real, but it was not done out of cruelty.`;
+
+      document.getElementById("endingText").textContent = mystery.ending;
+    }
+
+    function generateMystery() {
+      state.current = buildMystery();
+      renderMystery(state.current);
+    }
+
+    function rerollEnding() {
+      if (!state.current) {
+        generateMystery();
+        return;
+      }
+
+      state.current = {
+        ...state.current,
+        twist: pick(state.current.setting.twistOptions),
+        ending: pick(state.current.setting.endingOptions)
+      };
+
+      renderMystery(state.current);
+    }
+
+    document.getElementById("generateBtn").addEventListener("click", generateMystery);
+    document.getElementById("rerollEndingBtn").addEventListener("click", rerollEnding);
+    document.getElementById("themeSelect").addEventListener("change", (event) => {
+      state.themeKey = event.target.value;
+      updateThemeUI();
+      generateMystery();
+    });
+
+    updateThemeUI();
+    generateMystery();
+  </script>
+</body>
+</html>
