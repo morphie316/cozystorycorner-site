@@ -1,1 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>s
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kind Story Dice</title>
+  <style>
+    :root {
+      --bg: #fffaf4;
+      --card: #ffffff;
+      --ink: #2f2a26;
+      --soft: #6f665f;
+      --line: #eadfce;
+      --accent: #7b5cff;
+      --accent-2: #ffb84d;
+      --selected: #fff3cf;
+      --ed-line: #f2cb64;
+      --good: #1d7a46;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #fffaf4 0%, #fff3e6 100%);
+      color: var(--ink);
+    }
+
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .title-card,
+    .card {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .title-card {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .intro-card {
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 1.9rem;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--soft);
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    select,
+    button {
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    select {
+      border: 2px solid var(--line);
+      background-color: white;
+      color: var(--ink);
+      padding: 14px 44px 14px 16px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236f665f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 14px;
+    }
+
+    button {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--soft);
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.2rem;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stage {
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: #fffdf9;
+    }
+
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stage-title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .stage-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .small-btn {
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      background: #f5efe7;
+      color: var(--ink);
+      border: 2px solid var(--line);
+    }
+
+    .dice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .die {
+      position: relative;
+      min-height: 82px;
+      border-radius: 18px;
+      border: 2px solid #e7dcc9;
+      background: linear-gradient(180deg, #fffefc 0%, #f8f1e6 100%);
+      box-shadow: 0 6px 0 #eadfce, 0 10px 16px rgba(0,0,0,0.06);
+      padding: 14px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: bold;
+      line-height: 1.25;
+      cursor: pointer;
+      user-select: none;
+      transform-origin: center;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease, filter 0.12s ease;
+      overflow: hidden;
+    }
+
+    .die:hover {
+      transform: translateY(-2px);
+    }
+
+    .die:active {
+      transform: translateY(1px);
+      box-shadow: 0 3px 0 #eadfce, 0 6px 10px rgba(0,0,0,0.06);
+    }
+
+    .die.selected {
+      background: linear-gradient(180deg, #fffdf4 0%, var(--selected) 100%);
+      border-color: var(--selected-line);
+      box-shadow: 0 6px 0 #efd98b, 0 10px 16px rgba(0,0,0,0.08);
+    }
+
+    .die.rolling {
+      animation: wobble 0.18s linear infinite;
+      filter: saturate(1.03);
+    }
+
+    .die.landing {
+      animation: landBounce 0.36s ease-out;
+    }
+
+    .die.sparkle::after {
+      content: "✨";
+      position: absolute;
+      right: 8px;
+      top: 6px;
+      font-size: 1rem;
+      animation: sparklePop 0.55s ease-out forwards;
+      pointer-events: none;
+    }
+
+    .die::before {
+      content: "🎲";
+      position: absolute;
+      top: 8px;
+      left: 9px;
+      font-size: 0.9rem;
+      opacity: 0.55;
+    }
+
+    @keyframes wobble {
+      0% { transform: rotate(-3deg) translateY(0); }
+      25% { transform: rotate(3deg) translateY(-2px); }
+      50% { transform: rotate(-2deg) translateY(1px); }
+      75% { transform: rotate(2deg) translateY(-1px); }
+      100% { transform: rotate(-3deg) translateY(0); }
+    }
+
+    @keyframes landBounce {
+      0% { transform: scale(0.94) translateY(4px); }
+      45% { transform: scale(1.05) translateY(-5px); }
+      75% { transform: scale(0.985) translateY(2px); }
+      100% { transform: scale(1) translateY(0); }
+    }
+
+    @keyframes sparklePop {
+      0% { opacity: 0; transform: scale(0.3) rotate(-20deg); }
+      35% { opacity: 1; transform: scale(1.1) rotate(8deg); }
+      100% { opacity: 0; transform: scale(1.5) translateY(-8px) rotate(18deg); }
+    }
+
+    .selection-box {
+      margin-top: 10px;
+      color: var(--soft);
+      font-size: 0.95rem;
+    }
+
+    .selection-box strong {
+      color: var(--good);
+    }
+
+    .story-summary {
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-line {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #fffdf9;
+      border: 1px solid var(--line);
+    }
+
+    .summary-prompt {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #fff7ea;
+      border: 1px solid #efd7ac;
+    }
+
+    .tips {
+      display: grid;
+      gap: 8px;
+      color: var(--soft);
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--soft);
+      font-size: 0.92rem;
+      margin: 14px 0 26px;
+    }
+
+    @media (max-width: 640px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .dice-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      h1 {
+        font-size: 1.55rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title-card">
+      <h1>🎲 Kind Story Dice</h1>
+      <p class="subtitle">Roll soft story dice, pick your favourite choices, and build a safe story together. Start with cosy stories or fairy adventures.</p>
+    </div>
+
+    
+          <div class="card intro-card">
+        <div class="section-label">How to Play</div>
+        <div class="tips">
+          <p>1. Pick a mode.</p>
+          <p>2. Roll one section at a time, or roll everything.</p>
+          <p>3. Tap one result from each group to keep it.</p>
+          <p>4. Use the final story seed to tell a story together.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+      <select id="themeSelect">
+        <option value="cozy">🧁 Cozy Mode</option>
+        <option value="fairy">🧚 Fairy Mode</option>
+      </select>
+      <button id="rollAllBtn">✨ Roll Everything</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="section-label">Build Your Story</div>
+        <h2>Roll and choose</h2>
+        <div class="stage-list" id="stageList"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Story Summary</div>
+        <h2>Your story seed</h2>
+        <div class="story-summary" id="summaryBox"></div>
+      </div>
+
+    <p class="footer-note">Version 1 uses soft rolling dice cards. Real 3D dice can come later.</p>
+  </div>
+
+  <script>
+    const THEMES = {
+      cozy: {
+        name: "Cozy Mode",
+        stages: [
+          {
+            id: "characterTrait",
+            title: "Character Personality",
+            promptLabel: "Main character",
+            kind: "character trait",
+            choices: [
+              "shy", "adventurous", "jolly", "lonely", "happy", "curious", "kind", "sleepy", "brave", "cheerful",
+              "dreamy", "helpful", "gentle", "mischievous", "careful", "busy", "quiet", "bouncy", "polite", "hopeful"
+            ]
+          },
+          {
+            id: "characterType",
+            title: "Character Type",
+            promptLabel: "Main character",
+            kind: "character type",
+            choices: [
+              "fairy", "bear", "child", "unicorn", "baker", "fox", "rabbit", "cat", "inventor", "witch",
+              "hedgehog", "dragon", "mouse", "librarian", "gardener", "pony", "octopus", "teacher", "chef", "bird"
+            ]
+          },
+          {
+            id: "companionType",
+            title: "Companion",
+            promptLabel: "Companion",
+            kind: "companion type",
+            choices: [
+              "pony", "cat", "tiny dragon", "bunny", "parrot", "hedgehog", "fox", "mouse", "owl", "robot",
+              "goat", "lamb", "frog", "puppy", "duck", "snail"
+            ]
+          },
+          {
+            id: "companionHelp",
+            title: "Companion Help",
+            promptLabel: "Companion help",
+            kind: "companion help",
+            choices: [
+              "clever", "magical", "friendly", "strong", "fast", "brave", "helpful", "loyal",
+              "good at finding clues", "good at cheering people up", "good at hiding", "good at carrying things",
+              "good at sniffing things out", "good at reaching high places", "good at making people laugh", "good at noticing details"
+            ]
+          },
+          {
+            id: "placeTrait",
+            title: "Place Description",
+            promptLabel: "Place",
+            kind: "place trait",
+            choices: [
+              "sparkling", "hidden", "busy", "sleepy", "rainbow", "moonlit", "floating", "tiny", "cosy", "twisty",
+              "secret", "sunny", "misty", "glittering", "peaceful", "noisy", "storybook", "wobbly", "golden", "flower-filled"
+            ]
+          },
+          {
+            id: "placeType",
+            title: "Place Type",
+            promptLabel: "Place",
+            kind: "place type",
+            choices: [
+              "bakery", "library", "garden", "castle", "forest", "school", "harbour", "treehouse", "market", "farm",
+              "tower", "cottage", "fairground", "boat", "bridge", "picnic field", "workshop", "museum", "teashop", "village square"
+            ]
+          },
+          {
+            id: "object",
+            title: "Object",
+            promptLabel: "Object",
+            kind: "object",
+            choices: [
+              "a glowing key", "a secret map", "a silver bell", "a broken clock", "a lucky hat", "a striped scarf",
+              "a bag of magical flour", "a golden spoon", "a tiny crown", "a whispering shell", "a lantern", "a ribbon",
+              "a music box", "a letter with no name", "a wooden button", "a feather pen", "a moon-shaped biscuit", "a painted stone",
+              "a toy boat", "a bundle of wildflowers", "a missing book", "a puzzle box", "a bright umbrella", "a teacup"
+            ]
+          },
+          {
+            id: "event",
+            title: "Magic or Event",
+            promptLabel: "Event",
+            kind: "event",
+            choices: [
+              "something has gone missing", "a spell went wrong", "tiny creatures made a mess", "someone is blamed unfairly",
+              "a wish worked in a strange way", "something came to life", "there is a strange trail to follow", "a party went wrong",
+              "a machine got confused", "lights are dancing on their own", "a surprise guest arrived", "someone needs cheering up",
+              "a mystery note appeared", "a parade got muddled", "an invention behaved oddly", "a baking disaster happened",
+              "a song is causing trouble", "a secret room opened", "a game became real", "a decoration flew away",
+              "a sleepy spell spread", "animal biscuits woke up", "a weather charm got mixed up", "a storybook started changing"
+            ]
+          }
+        ]
+      },
+      fairy: {
+        name: "Fairy Mode",
+        stages: [
+          {
+            id: "characterTrait",
+            title: "Character Personality",
+            promptLabel: "Main character",
+            kind: "character trait",
+            choices: [
+              "brave", "curious", "kind-hearted", "dreamy", "hopeful", "clever", "sparkly", "confident", "loyal", "gentle",
+              "bold", "creative", "caring", "mischievous", "shy", "thoughtful", "cheerful", "determined", "friendly", "dramatic"
+            ]
+          },
+          {
+            id: "characterType",
+            title: "Character Type",
+            promptLabel: "Main character",
+            kind: "character type",
+            choices: [
+              "fairy", "witch", "specialist", "mermaid", "elf", "unicorn rider", "music fairy", "moon fairy", "light fairy", "nature fairy",
+              "fire fairy", "water fairy", "tech fairy", "princess", "dragon friend", "star fairy", "cloud fairy", "spell student", "healer", "guardian"
+            ]
+          },
+          {
+            id: "companionType",
+            title: "Fairy Power",
+            promptLabel: "Fairy power",
+            kind: "fairy power",
+            choices: [
+              "fire power", "nature power", "music power", "light power", "moon power", "water power", "technology power", "star power",
+              "dream power", "storm power", "crystal power", "sun power", "flower power", "wind power", "healing power", "rainbow power"
+            ]
+          },
+          {
+            id: "companionHelp",
+            title: "Special Strength",
+            promptLabel: "Special strength",
+            kind: "special strength",
+            choices: [
+              "great at calming wild magic", "great at cheering up friends", "great at solving magical puzzles", "great at making shields",
+              "great at flying quickly", "great at spotting hidden clues", "great at talking to magical creatures", "great at fixing magical mistakes",
+              "great at teamwork", "great at bright ideas", "great at protecting others", "great at turning feelings into strength",
+              "great at light spells", "great at finding lost things", "great at brave rescues", "great at understanding people"
+            ]
+          },
+          {
+            id: "placeTrait",
+            title: "Place Description",
+            promptLabel: "Place",
+            kind: "place trait",
+            choices: [
+              "glowing", "enchanted", "moonlit", "sparkling", "floating", "crystal-lined", "hidden", "shimmering", "stormy", "golden",
+              "starry", "magical", "ancient", "gleaming", "secret", "radiant", "misty", "bright", "dreamy", "spellbound"
+            ]
+          },
+          {
+            id: "placeType",
+            title: "Place Type",
+            promptLabel: "Place",
+            kind: "place type",
+            choices: [
+              "fairy school", "magic tower", "crystal garden", "training hall", "enchanted forest", "city plaza", "cloud palace", "moon bridge",
+              "spell library", "festival hall", "hidden lake", "royal balcony", "sky courtyard", "music room", "potion lab", "starlight cave",
+              "sun courtyard", "fairy dorm", "secret portal room", "magic marketplace"
+            ]
+          },
+          {
+            id: "object",
+            title: "Object",
+            promptLabel: "Object",
+            kind: "object",
+            choices: [
+              "a crystal key", "a glowing spellbook", "a moon ribbon", "a golden crown", "a star pendant", "a hidden letter",
+              "a wing charm", "a sparkle wand", "a silver mirror", "a potion vial", "a glowing shell", "a sun brooch",
+              "a music crystal", "a map of portals", "a floating lantern", "a feather charm", "a bracelet of light", "a wish gem",
+              "a bottle of fairy dust", "a moonstone", "a tiny dragon scale", "a cloud ticket", "a rainbow crystal", "a transformation pin"
+            ]
+          },
+          {
+            id: "event",
+            title: "Magic or Event",
+            promptLabel: "Event",
+            kind: "event",
+            choices: [
+              "wild magic escaped", "a spell backfired", "festival lights came alive", "someone's powers went wobbly",
+              "a wish was taken too literally", "a potion bubbled out of control", "a magical creature needs help", "someone has gone missing",
+              "a portal opened in the wrong place", "a practice lesson turned real", "a crystal started glowing strangely", "a prank spell got too big",
+              "a transformation was interrupted", "the music room cast a spell", "a magical storm is building", "a flying lesson caused chaos",
+              "the school decorations woke up", "an enchanted object is choosing people", "the moon magic is acting oddly", "a test has gone very wrong",
+              "a friendship charm broke", "a secret room opened by itself", "light spells are flickering everywhere", "a training drone is over-helpful"
+            ]
+          }
+        ]
+      }
+    };
+
+    const state = {
+      themeKey: "cozy",
+      selections: {},
+      rolledOptions: {},
+      audioEnabled: false,
+      audioContext: null
+    };
+
+    function currentTheme() {
+      return THEMES[state.themeKey];
+    }
+
+    function pickRandomItems(arr, count) {
+      const copy = [...arr];
+      const picked = [];
+      while (picked.length < count && copy.length > 0) {
+        const index = Math.floor(Math.random() * copy.length);
+        picked.push(copy.splice(index, 1)[0]);
+      }
+      return picked;
+    }
+
+    function ensureAudio() {
+      if (state.audioContext) return state.audioContext;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      state.audioContext = new AudioCtx();
+      return state.audioContext;
+    }
+
+    function playWoodenTick(delaySeconds = 0, pitch = 740) {
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      const now = ctx.currentTime + delaySeconds;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(pitch, now);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(240, pitch * 0.55), now + 0.08);
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(900, now);
+      filter.Q.value = 2.5;
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.18);
+    }
+
+    function unlockAudio() {
+      state.audioEnabled = true;
+      const ctx = ensureAudio();
+      if (ctx && ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+    }
+
+    function setRollingDisplay(stageId) {
+      const dice = document.querySelectorAll(`[data-stage="${stageId}"] .die`);
+      const stage = currentTheme().stages.find(s => s.id === stageId);
+      if (!stage) return;
+      const tempOptions = pickRandomItems(stage.choices, 4);
+      dice.forEach((die, index) => {
+        die.classList.add("rolling");
+        die.classList.remove("landing", "sparkle");
+        die.textContent = tempOptions[index] || "?";
+      });
+      if (state.audioEnabled) {
+        const base = 560 + Math.random() * 120;
+        playWoodenTick(0, base);
+      }
+    }
+
+    function stopRollingDisplay(stageId, finalOptions) {
+      const dice = document.querySelectorAll(`[data-stage="${stageId}"] .die`);
+      dice.forEach((die, index) => {
+        const stopDelay = index * 120;
+        setTimeout(() => {
+          die.classList.remove("rolling", "selected", "sparkle", "landing");
+          die.textContent = finalOptions[index] || "?";
+          void die.offsetWidth;
+          die.classList.add("landing", "sparkle");
+          die.dataset.value = finalOptions[index] || "?";
+          setTimeout(() => {
+            die.classList.remove("landing");
+          }, 420);
+          setTimeout(() => {
+            die.classList.remove("sparkle");
+          }, 620);
+          if (state.audioEnabled) {
+            playWoodenTick(0, 720 - (index * 45));
+          }
+        }, stopDelay);
+      });
+    }
+
+    function rollStage(stageId) {
+      unlockAudio();
+      const stage = currentTheme().stages.find(s => s.id === stageId);
+      if (!stage) return;
+
+      state.selections[stageId] = null;
+      renderSelections();
+
+      let ticks = 0;
+      const maxTicks = 8;
+      setRollingDisplay(stageId);
+
+      const interval = setInterval(() => {
+        setRollingDisplay(stageId);
+        ticks += 1;
+        if (ticks >= maxTicks) {
+          clearInterval(interval);
+          const finalOptions = pickRandomItems(stage.choices, 4);
+          state.rolledOptions[stageId] = finalOptions;
+          stopRollingDisplay(stageId, finalOptions);
+        }
+      }, 110);
+    }
+
+    function selectOption(stageId, value) {
+      state.selections[stageId] = value;
+      const dice = document.querySelectorAll(`[data-stage="${stageId}"] .die`);
+      dice.forEach(die => {
+        die.classList.toggle("selected", die.dataset.value === value);
+      });
+      renderSelections();
+    }
+
+    function renderSelections() {
+      currentTheme().stages.forEach(stage => {
+        const box = document.getElementById(`selection-${stage.id}`);
+        if (!box) return;
+        const value = state.selections[stage.id];
+        box.innerHTML = value
+          ? `<strong>Chosen:</strong> ${value}`
+          : `Nothing chosen yet.`;
+      });
+      renderSummary();
+    }
+
+    function renderSummary() {
+      const summaryBox = document.getElementById("summaryBox");
+      const characterTrait = state.selections.characterTrait;
+      const characterType = state.selections.characterType;
+      const companionType = state.selections.companionType;
+      const companionHelp = state.selections.companionHelp;
+      const placeTrait = state.selections.placeTrait;
+      const placeType = state.selections.placeType;
+      const object = state.selections.object;
+      const event = state.selections.event;
+
+      const isFairy = state.themeKey === "fairy";
+      const companionLabel = isFairy ? "Fairy power" : "Companion";
+      const helpLabel = isFairy ? "Special strength" : "Companion help";
+
+      summaryBox.innerHTML = `
+        <div class="summary-line"><strong>Main character:</strong> ${characterTrait && characterType ? `a ${characterTrait} ${characterType}` : "—"}</div>
+        <div class="summary-line"><strong>${companionLabel}:</strong> ${companionType || "—"}</div>
+        <div class="summary-line"><strong>${helpLabel}:</strong> ${companionHelp || "—"}</div>
+        <div class="summary-line"><strong>Place:</strong> ${placeTrait && placeType ? `a ${placeTrait} ${placeType}` : "—"}</div>
+        <div class="summary-line"><strong>Object:</strong> ${object || "—"}</div>
+        <div class="summary-line"><strong>Event:</strong> ${event || "—"}</div>
+        <div class="summary-prompt"><strong>Story starter:</strong> ${buildPrompt()}</div>
+      `;
+    }
+
+    function buildPrompt() {
+      const t1 = state.selections.characterTrait;
+      const t2 = state.selections.characterType;
+      const c1 = state.selections.companionType;
+      const c2 = state.selections.companionHelp;
+      const p1 = state.selections.placeTrait;
+      const p2 = state.selections.placeType;
+      const obj = state.selections.object;
+      const evt = state.selections.event;
+
+      if (!(t1 && t2 && c1 && c2 && p1 && p2 && obj && evt)) {
+        return "Roll and choose one result in each section to create your story starter.";
+      }
+
+      if (state.themeKey === "fairy") {
+        return `Tell a story about a ${t1} ${t2} with ${c1} and a special strength that is ${c2}. In a ${p1} ${p2}, they discover ${obj} just as ${evt}.`;
+      }
+
+      return `Tell a story about a ${t1} ${t2} and their ${c1} companion, who is ${c2}. In a ${p1} ${p2}, they discover ${obj} just as ${evt}.`;
+    }
+
+    function renderStages() {
+      const stageList = document.getElementById("stageList");
+      stageList.innerHTML = "";
+      const theme = currentTheme();
+
+      theme.stages.forEach(stage => {
+        const stageDiv = document.createElement("div");
+        stageDiv.className = "stage";
+        stageDiv.dataset.stage = stage.id;
+
+        stageDiv.innerHTML = `
+          <div class="stage-head">
+            <div class="stage-title">${stage.title}</div>
+            <div class="stage-buttons">
+              <button class="small-btn" type="button" data-roll-btn="${stage.id}">🎲 Roll ${stage.promptLabel}</button>
+            </div>
+          </div>
+          <div class="dice-grid" id="dice-${stage.id}">
+            <div class="die">?</div>
+            <div class="die">?</div>
+            <div class="die">?</div>
+            <div class="die">?</div>
+          </div>
+          <div class="selection-box" id="selection-${stage.id}">Nothing chosen yet.</div>
+        `;
+
+        stageList.appendChild(stageDiv);
+      });
+
+      document.querySelectorAll("[data-roll-btn]").forEach(btn => {
+        btn.addEventListener("click", () => rollStage(btn.dataset.rollBtn));
+      });
+
+      theme.stages.forEach(stage => {
+        const dice = document.querySelectorAll(`#dice-${stage.id} .die`);
+        dice.forEach(die => {
+          die.addEventListener("click", () => {
+            const value = die.dataset.value || die.textContent;
+            if (!value || value === "?") return;
+            selectOption(stage.id, value);
+          });
+        });
+      });
+    }
+
+    function syncRenderedDiceValues() {
+      currentTheme().stages.forEach(stage => {
+        const options = state.rolledOptions[stage.id] || [];
+        const dice = document.querySelectorAll(`#dice-${stage.id} .die`);
+        dice.forEach((die, index) => {
+          const value = options[index] || "?";
+          die.textContent = value;
+          die.dataset.value = value;
+          die.classList.toggle("selected", state.selections[stage.id] === value);
+        });
+      });
+    }
+
+    function resetForTheme() {
+      state.selections = {};
+      state.rolledOptions = {};
+      renderStages();
+      renderSelections();
+    }
+
+    function rollAllStages() {
+      const stages = currentTheme().stages;
+      stages.forEach((stage, index) => {
+        setTimeout(() => {
+          rollStage(stage.id);
+        }, index * 180);
+      });
+    }
+
+    document.getElementById("themeSelect").addEventListener("change", (event) => {
+      state.themeKey = event.target.value;
+      resetForTheme();
+    });
+
+    document.getElementById("rollAllBtn").addEventListener("click", () => {
+      unlockAudio();
+      rollAllStages();
+    });
+
+    resetForTheme();
+    renderSummary();
+  </script>
+</body>
+</html>
